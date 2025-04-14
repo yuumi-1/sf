@@ -1,5 +1,5 @@
-CREATE DATABASE testdb2;
-USE testdb2;
+CREATE DATABASE IF NOT EXISTS files_library_tmp;
+USE files_library_tmp;
 
 -- 表1：产品成立公告信息表
 CREATE TABLE IF NOT EXISTS product_announcement (

@@ -12,6 +12,15 @@ class MySQLConnector:
         database: str = "files_library_tmp",
         charset: str = "utf8mb4"
     ):
+    # def __init__(
+    #         self,
+    #         host: str = "localhost",
+    #         port: int = 3306,
+    #         user: str = "root",
+    #         password: str = "123456",
+    #         database: str = "testdb2",
+    #         charset: str = "utf8mb4"
+    # ):
         """
         初始化MySQL连接参数
         :param host: 数据库地址
