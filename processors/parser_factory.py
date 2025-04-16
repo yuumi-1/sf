@@ -1,7 +1,6 @@
 from .base_parser import BaseBankParser
 from .bank_parser import CQRCBParser, ABCParser, ICBCParser
 
-
 class BankParserFactory:
     """银行解析器工厂"""
 
@@ -27,7 +26,7 @@ class BankParserFactory:
         if any(bank in text for bank in ["渝农商","重庆农村商业银行","汇华理财","光大银行"]):
             return "CQRCB"
 
-        if "中国农业银行" in text:
+        if any(bank in text for bank in ["中国农业银行","农银理财"]):
             return "ABC"
 
         if "工商银行" in text:

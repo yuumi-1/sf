@@ -1,11 +1,26 @@
+import io
 import re
+import warnings
+import logging
+
+import pdfplumber
+import requests
+import matplotlib.pyplot as plt
+from numpy.lib.recfunctions import drop_fields
 
 from main import PDFProcessor
 
+
 if __name__ == "__main__":
-    url='https://licai-report-oss-bucket.oss-cn-shenzhen.aliyuncs.com/Financial_announcement/icbc/工银理财·鑫尊享固定收益类封闭式理财产品（长城系列22GS3133）成立报告-2022-05-06.pdf'
+
+    # 获取 pdfminer 的日志记录器
+    pdfminer_logger = logging.getLogger('pdfminer')
+    # 设置日志级别为 ERROR，忽略 WARNING 及以下级别的日志
+    pdfminer_logger.setLevel(logging.ERROR)
+    url = "https://licai-report-1301073378.cos.ap-guangzhou.myqcloud.com/Financial_announcement/ewealth/2024-08/农银理财农银安心·天天利同业存单及存款增强4号理财产品（对公低波悦享）发行公告（产品销售代码：NYADTTLTCZQDGDB4）_NYADTTLTCZQDGDB4_2024-08-28.pdf"
     processor = PDFProcessor()
     text = processor.extract_text_from_pdf(url)
-    # print(text)
     print("="*50)
     processor.process_pdf(url)
+    print("=" * 50)
+

@@ -5,15 +5,13 @@ import datetime
 import requests
 import io
 import PyPDF2
-import os
-from config import PDF_CACHE_DIR
-
 
 class BaseBankParser(ABC):
     """所有银行解析器的抽象基类"""
 
-    def extract_text_from_pdf(self, url: str) -> str:
+    def extract_text_from_pdf(self, url: str):
         """从PDF文件中提取文本内容"""
+
         text = ""
         # 下载PDF文件
         response = requests.get(url)
@@ -28,7 +26,7 @@ class BaseBankParser(ABC):
         # print(text)
         return text
 
-    def parse_product_info(self, text: str) -> Tuple[Dict, Dict]:
+    def parse_product_info(self, text) -> Tuple[Dict, Dict]:
         """解析提取的文本，返回两个表的数据"""
         # 产品基本信息
         product_info = {
@@ -44,8 +42,8 @@ class BaseBankParser(ABC):
         benchmark_max = benchmark[0]['max']
         benchmark_min = benchmark[0]['min']
         try:
-            _benchmark_max = float(benchmark_max[:-1]) / 100
-            _benchmark_min = float(benchmark_min[:-1]) / 100
+            _benchmark_max = float(benchmark_max) / 100
+            _benchmark_min = float(benchmark_min) / 100
         except Exception as e:
             _benchmark_max = None
             _benchmark_min = None
@@ -69,7 +67,7 @@ class BaseBankParser(ABC):
         match = re.search(pattern, text)
         try:
             if "份额" in match.group(1):
-                _match = re.findall(r'(^.*[A-Z]份额.*$)', text, re.MULTILINE)
+                _match = re.findall(r'([A-Z]份额:\d+\.\d+%)', text, re.MULTILINE)
                 result = " ".join(_match)
                 return result
             else:
@@ -106,44 +104,14 @@ class BaseBankParser(ABC):
 
     def _parse_benchmark(self, text: str, pattern: str) -> dict:
         """基准率解析"""
-        patterns = [
-            r'([A-Z]份额:\d+\.\d+%[^%]*[A-Z]份额:\d+\.\d+%)',  # A份额:a% B份额:b%
-            r'(\d+\.\d+%\s*-\s*\d+\.\d+%)',  # a% - b%
-            r'(\d+\.\d+%)'  # 单一值
-        ]
-
-        for pattern in patterns:
-            match = re.search(pattern, text)
-            if match:
-                values = re.findall(r'\d+\.\d+%', match.group())
-                return {
-                    'min': min(values, key=lambda x: float(x[:-1])),
-                    'max': max(values, key=lambda x: float(x[:-1]))
-                }
-        return {'min': None, 'max': None}
-        # _match = re.search(pattern, text)
-        # match=_match.group(1).strip()
-        # if "-" in match:
-        #     _parts = match.split("-")
-        #     _parts_min=_parts[0].strip()
-        #     _parts_max=_parts[1].strip()
-        #     return {'min': _parts_min, 'max': _parts_max}
-        # if "份额" in match:
-        #     _match = re.findall(r'(\d+\.\d+)%', text,re.MULTILINE)
-        #     _parts_min=_match[0]
-        #     try:
-        #         _parts_max=_match[1]
-        #     except IndexError:
-        #         _parts_max = _match[0]
-        #     return {'min': _parts_min, 'max': _parts_max}
-        #
-        # else:
-        #     try:
-        #         _parts_min=match
-        #         _parts_max=match
-        #         return {'min': _parts_min, 'max': _parts_max}
-        #     except IndexError:
-        #         return None
+        match = self._extract_by_pattern(text, r'(?:基准|收益率)\s*(.+)')
+        values = re.finditer(r'\d+\.\d+', match)
+        L=[]
+        for value in values:
+            L.append(value.group())
+        if len(L) == 0:
+            return {'min': None, 'max': None}
+        return {'min': min(L), 'max': max(L)}
 
     def _parse_date(self, text: str, pattern: str) -> Optional[datetime]:
         """解析中文日期字符串"""
@@ -167,9 +135,8 @@ class BaseBankParser(ABC):
                 if len(parts[0]) == 4:  # 确保是yyyy-mm-dd格式
                     return datetime.datetime.strptime(date_str, "%Y-%m-%d").date()
 
-            return datetime.date(9999, 12, 31)
+            return None
 
         except Exception as e:
-            # 可添加日志：logging.warning(f"日期解析失败: {e}, 原始文本: {text}")
             return None
 

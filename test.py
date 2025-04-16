@@ -1,23 +1,26 @@
-import unittest
-from processors.bank_parser import CQRCBParser
+import io
+import re
+import warnings
+import logging
+
+import pdfplumber
+import requests
+import matplotlib.pyplot as plt
+from numpy.lib.recfunctions import drop_fields
+
+from main import PDFProcessor
 
 
-class TestCQRCBParser(unittest.TestCase):
-    def setUp(self):
-        self.parser = CQRCBParser()
-        with open('tests/sample_cqrcb.txt', 'r', encoding='utf-8') as f:
-            self.sample_text = f.read()
+if __name__ == "__main__":
 
-    def test_parse_reg_code(self):
-        reg_code = self.parser.parse_product_info(self.sample_text)[0]['reg_code']
-        self.assertEqual(reg_code, "C123456789")
+    # 获取 pdfminer 的日志记录器
+    pdfminer_logger = logging.getLogger('pdfminer')
+    # 设置日志级别为 ERROR，忽略 WARNING 及以下级别的日志
+    pdfminer_logger.setLevel(logging.ERROR)
+    url = "https://licai-oss-bucket-1301073378.cos.ap-guangzhou.myqcloud.com/Financial_announcement/ewealth/中国农业银行理财产品发行公告（2019年3月6日）_AD193603_2019-03-06_LCkemCzsbb.pdf"
+    processor = PDFProcessor()
+    text = processor.extract_text_from_pdf(url)
+    print("="*50)
+    processor.process_pdf(url)
+    print("=" * 50)
 
-    def test_parse_product_name(self):
-        prd_name = self.parser.parse_product_info(self.sample_text)[0]['prd_name']
-        self.assertEqual(prd_name, "渝农商理财鑫悦系列2023年第1期")
-
-    # 添加更多测试用例...
-
-
-if __name__ == '__main__':
-    unittest.main()
