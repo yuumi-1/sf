@@ -20,6 +20,7 @@ class BaseBankParser(ABC):
             with io.BytesIO(response.content) as file:
                 reader = PyPDF2.PdfReader(file)
                 for page in reader.pages:
+                    text += "\n"
                     text += page.extract_text()
         except Exception as e:
             print(f"提取PDF文本失败: {e}")
@@ -32,11 +33,11 @@ class BaseBankParser(ABC):
         product_info = {
             'reg_code': self._extract_by_pattern(text, r'登记编码\s*(\w+)'),
             'prd_code': self._extract_by_pattern(text, r'(?:代码|编号)\s*(\w+)'),
-            'prd_name': self._extract_by_pattern(text, r"产品名称\s*([\s\S]+?)(?=\n.*产品代码|$)").replace("\n",""),
+            'prd_name': self._extract_by_pattern(text, r"产品名称\s*([\s\S]+?)(?=\n.*产品代码|产品编号|$)").replace("\n",""),
             'amount_raised': self._parse_decimal(text, r'(?:规模|募集金额)\s*(.+)'),
             'product_start_date': self._parse_date(text, r'(?:产品起始日期|成立日)\s+(.+)'),
             'product_end_date': self._parse_date(text, r'(?:终止日期|产品期限|产品到期日|产品结束日期)\s+(.+)'),
-            'fund_custodian': self._extract_by_pattern(text, r'(?:托管机构|产品托管人|产品托管账户开户行)\s*(.+)')
+            'fund_custodian': self._extract_by_pattern(text, r'(?:托管机构|托管人|托管账户开户行)\s*(.+)')
         }
         benchmark = self._parse_benchmark(text, r'(?:基准|收益率)\s*(.+)'),
         benchmark_max = benchmark[0]['max']
@@ -52,7 +53,7 @@ class BaseBankParser(ABC):
             'reg_code': product_info['reg_code'],
             'prd_code': product_info['prd_code'],
             'prd_name': product_info['prd_name'],
-            'perf_benchmark': self._extract_by_pattern(text, r'(?:基准|收益率)\s*(.+)'),
+            'perf_benchmark': self._extract_by_pattern(text, r'(?:基准(?:（年化）)?|收益率)\s*(.+)'),
             'perf_benchmark_max': _benchmark_max,
             'perf_benchmark_min': _benchmark_min,
             'start_date': product_info['product_start_date']  # 默认使用产品起始日期

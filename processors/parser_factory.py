@@ -22,7 +22,7 @@ class BankParserFactory:
     def detect_bank(cls, text: str) -> str:
         """通过文本内容自动检测银行类型"""
 
-        if any(bank in text for bank in ["中国农业银行","农银理财"]):
+        if any(bank in text for bank in ["中国农业银行","农银理财","ewealth"]):
             return "ABC"
 
         else:

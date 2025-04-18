@@ -23,7 +23,9 @@ class ABCParser(BaseBankParser):
         try:
             with pdfplumber.open(io.BytesIO(response.content)) as pdf:
                 for page in pdf.pages:
-                    tables.extend(page.extract_table())
+                    table = page.extract_table()
+                    if table is not None:
+                        tables.extend(table)
             for i in range(len(tables)):
                 for j in range(len(tables[i])):
                     if tables[i][j]:

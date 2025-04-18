@@ -293,10 +293,10 @@ if __name__ == "__main__":
     # 设置日志级别为 ERROR，忽略 WARNING 及以下级别的日志
     pdfminer_logger.setLevel(logging.ERROR)
     conn = MySQLConnector()
-    start_count = 1780
+    start_count = 2200
     total_count = conn.execute_query("SELECT COUNT(*) as cnt FROM est_file_tasks")[0]['cnt']
     print(f"总数据: {total_count} 条")
-    sql_count = (start_count, 1000)
+    sql_count = (start_count, 200)
     path = conn.execute_query("SELECT id ,issuer_name ,local_path FROM est_file_tasks LIMIT %s,%s", sql_count)
     processor = PDFProcessor()
     success_count = 0
