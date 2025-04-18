@@ -32,7 +32,7 @@ class BaseBankParser(ABC):
         product_info = {
             'reg_code': self._extract_by_pattern(text, r'登记编码\s*(\w+)'),
             'prd_code': self._extract_by_pattern(text, r'(?:代码|编号)\s*(\w+)'),
-            'prd_name': self._extract_by_pattern(text, r"产品名称\s*([\s\S]+?)(?=\n产品代码|$)").replace("\n",""),
+            'prd_name': self._extract_by_pattern(text, r"产品名称\s*([\s\S]+?)(?=\n.*产品代码|$)").replace("\n",""),
             'amount_raised': self._parse_decimal(text, r'(?:规模|募集金额)\s*(.+)'),
             'product_start_date': self._parse_date(text, r'(?:产品起始日期|成立日)\s+(.+)'),
             'product_end_date': self._parse_date(text, r'(?:终止日期|产品期限|产品到期日|产品结束日期)\s+(.+)'),
@@ -67,11 +67,14 @@ class BaseBankParser(ABC):
         match = re.search(pattern, text)
         try:
             if "份额" in match.group(1):
-                _match = re.findall(r'([A-Z]份额[：:]\d+\.\d+%)', text, re.MULTILINE)
+                _match = re.findall(r'([A-Z]份额[：:]\d+\.\d+%(?:-\d+\.\d+%)?)', text, re.MULTILINE)
                 if not _match:
-                    result = "中国人民银行公布的7天通知存款利率"
+                    pattern = r"([A-Z]份额:).*?(\1.*?)(?=[A-Z]份额:|$)"
+                    _text = re.search(r"基准\s*([\s\S]+?)(?=\n.*备注|$)", text).group(1).replace("\n", "")
+                    _match = re.findall(pattern, _text)
+                    result = " ".join(value for name, value in _match)
                     return result
-                result = " ".join(_match, re.MULTILINE)
+                result = " ".join(_match)
                 return result
             else:
                 return match.group(1).strip()

@@ -1,5 +1,5 @@
 from .base_parser import BaseBankParser
-from .bank_parser import CQRCBParser, ABCParser, ICBCParser
+from .bank_parser import CQRCBParser, ABCParser
 
 class BankParserFactory:
     """银行解析器工厂"""
@@ -7,7 +7,6 @@ class BankParserFactory:
     _parsers = {
         "CQRCB": CQRCBParser,
         "ABC": ABCParser,
-        "ICBC": ICBCParser
         # 未来可以添加其他银行...
     }
 
@@ -23,14 +22,11 @@ class BankParserFactory:
     def detect_bank(cls, text: str) -> str:
         """通过文本内容自动检测银行类型"""
 
-        if any(bank in text for bank in ["渝农商","重庆农村商业银行","汇华理财","光大银行"]):
-            return "CQRCB"
-
         if any(bank in text for bank in ["中国农业银行","农银理财"]):
             return "ABC"
 
-        if "工商银行" in text:
-            return "ICBC"
+        else:
+            return "CQRCB"
 
 
         # 可以添加其他银行的检测逻辑...

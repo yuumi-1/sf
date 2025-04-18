@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from numpy.lib.recfunctions import drop_fields
 
 from main import PDFProcessor
-
+from processors.bank_parser import ABCParser
 
 if __name__ == "__main__":
 
@@ -17,10 +17,9 @@ if __name__ == "__main__":
     pdfminer_logger = logging.getLogger('pdfminer')
     # 设置日志级别为 ERROR，忽略 WARNING 及以下级别的日志
     pdfminer_logger.setLevel(logging.ERROR)
-    url = "https://licai-oss-bucket-1301073378.cos.ap-guangzhou.myqcloud.com/Financial_announcement_tmp/cqrcb/渝农商理财渝快宝7号发行公告_24GSGK12807_2024-01-25.pdf"
+    url = "https://licai-oss-bucket-1301073378.cos.ap-guangzhou.myqcloud.com/Financial_announcement/ewealth/中国农业银行“安心·半年开放”第1期人民币理财产品成立公告_AD181801_2018-09-06_AOS76PXDLL.pdf"
     processor = PDFProcessor()
     text = processor.extract_text_from_pdf(url)
     print("="*50)
     processor.process_pdf(url,1,"123")
     print("=" * 50)
-

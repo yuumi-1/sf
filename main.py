@@ -1,7 +1,11 @@
+import cProfile
 import re
 from typing import Dict
 from venv import logger
 import logging
+
+import snakeviz
+
 from config import DB_CONFIG, DB_CONFIG_Local
 from database.connector import MySQLConnector
 from processors import BankParserFactory
@@ -17,9 +21,10 @@ class PDFProcessor:
     def __init__(self):
         self.pool = PooledDB(
             creator=pymysql,
-            **DB_CONFIG_Local
-            # **DB_CONFIG
+            # **DB_CONFIG_Local
+            **DB_CONFIG
         )
+
 
     def extract_text_from_pdf(self, url: str) -> str:
         """从PDF文件中提取文本内容"""
@@ -33,7 +38,7 @@ class PDFProcessor:
                 for page in reader.pages:
                     text += page.extract_text()
         except Exception as e:
-            print(f"\n提取PDF文本失败: {e}")
+            logger.error(f"提取PDF失败：{e}")
             print(url)
         return text
 
@@ -67,9 +72,9 @@ class PDFProcessor:
     def _get_parser_for_pdf(self, pdf_url: str):
         """为PDF获取合适的解析器"""
         # 先下载部分内容用于检测银行类型
-        text = self.extract_text_from_pdf(pdf_url)
+        # text = self.extract_text_from_pdf(pdf_url)
         # print(text)
-        bank_id = BankParserFactory.detect_bank(text)
+        bank_id = BankParserFactory.detect_bank(pdf_url)
         # print(bank_id)
         return BankParserFactory.get_parser(bank_id)
 
@@ -205,12 +210,16 @@ class PDFProcessor:
                         new_benchmark_data['prd_code'] = new_prd_code
                         new_benchmark_data['prd_name'] = new_prd_name
                         new_benchmark_data['perf_benchmark'] = share
-                        values = re.finditer(r'\d+\.\d+', new_benchmark_data['perf_benchmark'])
-                        L = []
-                        for value in values:
-                            L.append(value.group())
-                        new_benchmark_data['perf_benchmark_max'] = float(max(L)) / 100
-                        new_benchmark_data['perf_benchmark_min'] = float(min(L)) / 100
+                        try:
+                            values = re.finditer(r'\d+\.\d+', new_benchmark_data['perf_benchmark'])
+                            L = []
+                            for value in values:
+                                L.append(value.group())
+                            new_benchmark_data['perf_benchmark_max'] = float(max(L)) / 100
+                            new_benchmark_data['perf_benchmark_min'] = float(min(L)) / 100
+                        except Exception as e:
+                            new_benchmark_data['perf_benchmark_max'] = None
+                            new_benchmark_data['perf_benchmark_min'] = None
                         cursor.execute(
                             "SELECT 1 FROM performance_benchmark WHERE reg_code = %s AND prd_code = %s AND perf_benchmark = %s",
                             (benchmark_data['reg_code'], benchmark_data['prd_code'], new_benchmark_data['perf_benchmark'])
@@ -270,7 +279,6 @@ class PDFProcessor:
             return True
 
         except Exception as e:
-            print(f"数据库操作失败: {e}")
             conn.rollback()
             logger.error(f"DB Error: {e}")
             print(f"{url}")
@@ -285,10 +293,10 @@ if __name__ == "__main__":
     # 设置日志级别为 ERROR，忽略 WARNING 及以下级别的日志
     pdfminer_logger.setLevel(logging.ERROR)
     conn = MySQLConnector()
-    start_count = 800
+    start_count = 1780
     total_count = conn.execute_query("SELECT COUNT(*) as cnt FROM est_file_tasks")[0]['cnt']
     print(f"总数据: {total_count} 条")
-    sql_count = (start_count, 500)
+    sql_count = (start_count, 1000)
     path = conn.execute_query("SELECT id ,issuer_name ,local_path FROM est_file_tasks LIMIT %s,%s", sql_count)
     processor = PDFProcessor()
     success_count = 0
@@ -300,6 +308,7 @@ if __name__ == "__main__":
         try:
             if success_count % 100 == 0:
                 print(f"\nRow:{success_count // 100}",end='')
+            cProfile.run('processor.process_pdf(pdf_url,i[\'id\'],i[\'issuer_name\'])', 'profile_data.prof')
             processor.process_pdf(pdf_url,i['id'],i['issuer_name'])
             success_count = success_count + 1
             print("-", end="")
