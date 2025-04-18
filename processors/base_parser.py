@@ -53,7 +53,8 @@ class BaseBankParser(ABC):
             'reg_code': product_info['reg_code'],
             'prd_code': product_info['prd_code'],
             'prd_name': product_info['prd_name'],
-            'perf_benchmark': self._extract_by_pattern(text, r'(?:基准(?:（年化）)?|收益率)\s*(.+)'),
+            # 'perf_benchmark': self._extract_by_pattern(text, r'(?:基准(?:（年化）)?|收益率)\s*(.+)'),
+            'perf_benchmark': self._extract_by_pattern(text, r'(?:基准(?:\(年化\))?\s*)(.*)'),
             'perf_benchmark_max': _benchmark_max,
             'perf_benchmark_min': _benchmark_min,
             'start_date': product_info['product_start_date']  # 默认使用产品起始日期

@@ -298,6 +298,7 @@ if __name__ == "__main__":
     print(f"总数据: {total_count} 条")
     sql_count = (start_count, 200)
     path = conn.execute_query("SELECT id ,issuer_name ,local_path FROM est_file_tasks LIMIT %s,%s", sql_count)
+    path = conn.execute_query("SELECT id ,issuer_name ,local_path FROM est_file_tasks where issuer_name = \"光大\"")
     processor = PDFProcessor()
     success_count = 0
     fail_count = 0
@@ -307,8 +308,7 @@ if __name__ == "__main__":
         pdf_url = i['local_path']
         try:
             if success_count % 100 == 0:
-                print(f"\nRow:{success_count // 100}",end='')
-            cProfile.run('processor.process_pdf(pdf_url,i[\'id\'],i[\'issuer_name\'])', 'profile_data.prof')
+                print(f"\n{success_count} / {len(path)}",end='')
             processor.process_pdf(pdf_url,i['id'],i['issuer_name'])
             success_count = success_count + 1
             print("-", end="")
