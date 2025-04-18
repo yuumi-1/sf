@@ -3,7 +3,7 @@ DB_CONFIG_Local = {
     'host': 'localhost',
     'user': 'root',
     'password': '123456',
-    'database': 'testdb2',
+    'database': 'testdb3',
     'port': 3306,
     'maxconnections': 200
 }

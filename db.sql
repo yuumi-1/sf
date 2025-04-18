@@ -1,5 +1,5 @@
-CREATE DATABASE IF NOT EXISTS files_library_tmp;
-USE files_library_tmp;
+CREATE DATABASE IF NOT EXISTS testdb3;
+USE testdb3;
 
 -- 表1：产品成立公告信息表
 CREATE TABLE IF NOT EXISTS product_announcement (
@@ -11,6 +11,8 @@ CREATE TABLE IF NOT EXISTS product_announcement (
     product_start_date DATE COMMENT '产品起始日期',
     product_end_date DATE COMMENT '产品结束日期',
     fund_custodian VARCHAR(200) COMMENT '托管机构',
+    source_type VARCHAR(255) COMMENT '来源标识',
+    source_id INT COMMENT '来源id',
     update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '入库时间',
     INDEX idx_reg_code (reg_code),
@@ -29,6 +31,8 @@ CREATE TABLE IF NOT EXISTS performance_benchmark (
     start_date DATE COMMENT '启用日期',
     update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '入库时间',
+    source_type VARCHAR(255) COMMENT '来源标识',
+    source_id INT COMMENT '来源id',
     INDEX idx_reg_code (reg_code),
     INDEX idx_prd_code (prd_code),
     INDEX idx_start_date (start_date),

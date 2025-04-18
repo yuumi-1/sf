@@ -67,8 +67,11 @@ class BaseBankParser(ABC):
         match = re.search(pattern, text)
         try:
             if "份额" in match.group(1):
-                _match = re.findall(r'([A-Z]份额:\d+\.\d+%)', text, re.MULTILINE)
-                result = " ".join(_match)
+                _match = re.findall(r'([A-Z]份额[：:]\d+\.\d+%)', text, re.MULTILINE)
+                if not _match:
+                    result = "中国人民银行公布的7天通知存款利率"
+                    return result
+                result = " ".join(_match, re.MULTILINE)
                 return result
             else:
                 return match.group(1).strip()
